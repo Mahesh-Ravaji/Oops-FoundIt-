@@ -1,8 +1,41 @@
 import React, { useState } from 'react';
 import { Camera } from 'lucide-react';
+// import { db } from '../firebase';
+// import { db } from "../../firebase";
+// import { db } from "../firebase";
+
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 const ReportItem = () => {
   const [itemType, setItemType] = useState<'lost' | 'found'>('lost');
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    description: '',
+    location: '',
+    date: '',
+    imageUrl: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'items'), {
+        ...formData,
+        type: itemType,
+        createdAt: Timestamp.now(),
+      });
+      alert('Item successfully reported!');
+      setFormData({ title: '', category: '', description: '', location: '', date: '', imageUrl: '' });
+    } catch (error) {
+      console.error('Error adding document: ', error);
+      alert('Error reporting the item. Please try again.');
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -12,9 +45,7 @@ const ReportItem = () => {
         <div className="flex gap-4 mb-6">
           <button
             className={`flex-1 py-2 px-4 rounded-lg ${
-              itemType === 'lost'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600'
+              itemType === 'lost' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'
             }`}
             onClick={() => setItemType('lost')}
           >
@@ -22,9 +53,7 @@ const ReportItem = () => {
           </button>
           <button
             className={`flex-1 py-2 px-4 rounded-lg ${
-              itemType === 'found'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-600'
+              itemType === 'found' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'
             }`}
             onClick={() => setItemType('found')}
           >
@@ -32,23 +61,29 @@ const ReportItem = () => {
           </button>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Item Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Item Title</label>
             <input
               type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="e.g., Blue Backpack, iPhone 13"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            >
               <option value="">Select a category</option>
               <option value="electronics">Electronics</option>
               <option value="clothing">Clothing</option>
@@ -59,57 +94,41 @@ const ReportItem = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               rows={4}
               placeholder="Provide detailed description of the item..."
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input
               type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="e.g., Library 2nd Floor, Student Center"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
             <input
               type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Images
-            </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-              <div className="space-y-1 text-center">
-                <Camera className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload a file</span>
-                    <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-              </div>
-            </div>
           </div>
 
           <button

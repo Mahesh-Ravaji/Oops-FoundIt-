@@ -1,8 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { db } from '../firebase';
+import googleLogo from '../assets/google-logo.png'; // Ensure you have the Google logo in your assets folder
 
 const Register = () => {
+  const handleGoogleSignIn = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log('User Info:', result.user);
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
@@ -96,6 +110,16 @@ const Register = () => {
             Create Account
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-100"
+          >
+            <img src={googleLogo} alt="Google Logo" className="h-5 w-5 mr-2" />
+            Sign Up with Google
+          </button>
+        </div>
       </div>
     </div>
   );

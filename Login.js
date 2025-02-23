@@ -1,11 +1,27 @@
-// import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase'; // Adjust the import path as needed
 import { MapPin } from 'lucide-react';
-{/* <img src="/google-logo.png" alt="Google Logo" className="h-5 w-5 mr-2" /> */}
-
-import googleLogo from '../assets/google-logo.png'; // Ensure you have the Google logo in your assets folder
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // For navigation after login
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(null); // Reset errors
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard'); // Redirect to a dashboard page after login (change as needed)
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
@@ -20,7 +36,9 @@ const Login = () => {
       </div>
 
       <div className="bg-white py-8 px-4 shadow-md rounded-lg sm:px-10">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleLogin}>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email address
@@ -29,6 +47,8 @@ const Login = () => {
               id="email"
               name="email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
@@ -43,30 +63,12 @@ const Login = () => {
               id="password"
               name="password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </a>
-            </div>
           </div>
 
           <button
@@ -76,20 +78,6 @@ const Login = () => {
             Sign in
           </button>
         </form>
-
-        <div className="mt-6 flex items-center justify-center">
-          <div className="border-t border-gray-300 w-full"></div>
-          <span className="px-4 text-sm text-gray-500">or</span>
-          <div className="border-t border-gray-300 w-full"></div>
-        </div>
-
-        <button
-          className="mt-6 w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-100"
-        >
-          <img src={googleLogo} alt="Google Logo" className="h-5 w-5 mr-2" />
-
-          Sign in with Google
-        </button>
       </div>
     </div>
   );
